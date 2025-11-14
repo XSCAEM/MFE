@@ -24,7 +24,143 @@
         width: 100%;
         padding: 6px;
         margin: 4px 0 16px 0;
+        box-sizing: border-box;<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Adobe Destination Selector – Auth Flow Demo</title>
+
+    <!-- Adobe Selectors UMD bundle -->
+    <script src="https://experience.adobe.com/solutions/CQ-assets-selectors/static-assets/resources/assets-selectors.js"></script>
+
+    <style>
+      body { font-family: Arial, sans-serif; margin: 0; }
+      .shell { display: flex; height: 100vh; }
+
+      .cms {
+        width: 35%;
+        border-right: 1px solid #ddd;
+        padding: 20px;
+        background: #f7f7f7;
         box-sizing: border-box;
+      }
+      .cms h2 { margin: 0 0 10px 0; }
+      .cms label { font-size: 12px; font-weight: bold; }
+      .cms input {
+        width: 100%;
+        padding: 6px;
+        margin: 4px 0 16px 0;
+        box-sizing: border-box;
+      }
+      .preview-page {
+        border: 1px solid #ccc;
+        background: #fff;
+        padding: 10px;
+      }
+      .preview-page h3 { margin-top: 0; }
+
+      .mfe {
+        width: 65%;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+      #destination-selector-container {
+        height: calc(100vh - 200px);
+        border: 1px solid #ddd;
+        background: #fff;
+        box-sizing: border-box;
+      }
+      pre {
+        margin-top: 10px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        background: #fafafa;
+        font-size: 11px;
+        max-height: 200px;
+        overflow: auto;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="shell">
+
+      <!-- Fake CMS (left) -->
+      <div class="cms">
+        <h2>Fake CMS Editor (Sitecore-like)</h2>
+
+        <label>Page Title</label>
+        <input id="titleInput" placeholder="Summer campaign"
+               oninput="document.getElementById('pageTitle').textContent = this.value || 'Page Title';">
+
+        <label>Chosen AEM Folder Path</label>
+        <input id="pathInput" placeholder="Pick a folder on the right" readonly />
+
+        <h3>Page Preview</h3>
+        <div class="preview-page">
+          <h3 id="pageTitle">Page Title</h3>
+          <p style="font-size: 12px; color:#555;">
+            Authors stay in Sitecore. The panel on the right is Adobe’s official micro frontend.
+          </p>
+          <p id="folderPreview"
+             style="font-size: 11px; color:#777; word-break: break-all;">
+            Selected AEM folder: (none yet)
+          </p>
+        </div>
+      </div>
+
+      <!-- Destination Selector (right) -->
+      <div class="mfe">
+        <h2>Adobe Destination Selector (Auth Flow)</h2>
+        <p style="font-size: 13px;">
+          This is the official Adobe Destination Selector micro frontend using IMS auth flow.
+        </p>
+
+        <div id="destination-selector-container"></div>
+
+        <pre id="selectionOutput">// Folder selection JSON will appear here</pre>
+      </div>
+
+    </div>
+
+    <script>
+      window.addEventListener('load', () => {
+        const container     = document.getElementById('destination-selector-container');
+        const output        = document.getElementById('selectionOutput');
+        const pathInput     = document.getElementById('pathInput');
+        const folderPreview = document.getElementById('folderPreview');
+
+        /** STEP 1 — Register auth service */
+        PureJSSelectors.registerAssetsSelectorsAuthService({
+          imsClientId: "64ba5a2bba6f473fb9a43262d9730f6b",  // <--- replace me
+          imsScope: "AdobeID,openid,additional_info.projectedProductContext,read_organizations",
+          redirectUri: "https://xscaem.github.io/MFE" // <--- EXACT redirect
+        });
+
+        /** STEP 2 — Render Destination Selector WITH auth flow */
+        const props = {
+          imsOrg: "AF5F1E996757ECD00A495C0D@AdobeOrg",
+          handleSelection: (selection) => {
+            output.textContent = JSON.stringify(selection, null, 2);
+
+            if (Array.isArray(selection) && selection.length > 0) {
+              const first = selection[0];
+              const path = first["repo:path"] || "(no path)";
+              pathInput.value = path;
+              folderPreview.textContent = "Selected AEM folder: " + path;
+            }
+          }
+        };
+
+        PureJSSelectors.renderDestinationSelectorWithAuthFlow(
+          container,
+          props
+        );
+      });
+    </script>
+  </body>
+</html>
+
       }
       .preview-page {
         border: 1px solid #ccc;
