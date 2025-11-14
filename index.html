@@ -8,14 +8,9 @@
     <script src="https://experience.adobe.com/solutions/CQ-assets-selectors/static-assets/resources/assets-selectors.js"></script>
 
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-      }
-      .shell {
-        display: flex;
-        height: 100vh;
-      }
+      body { font-family: Arial, sans-serif; margin: 0; }
+      .shell { display: flex; height: 100vh; }
+
       .cms {
         width: 35%;
         border-right: 1px solid #ddd;
@@ -23,13 +18,8 @@
         box-sizing: border-box;
         background: #f7f7f7;
       }
-      .cms h2 {
-        margin-top: 0;
-      }
-      .cms label {
-        font-size: 12px;
-        font-weight: bold;
-      }
+      .cms h2 { margin-top: 0; }
+      .cms label { font-size: 12px; font-weight: bold; }
       .cms input {
         width: 100%;
         padding: 6px;
@@ -41,18 +31,15 @@
         background: #fff;
         padding: 10px;
       }
-      .preview-page h3 {
-        margin-top: 0;
-      }
+      .preview-page h3 { margin-top: 0; }
 
       .mfe {
         width: 65%;
         padding: 20px;
         box-sizing: border-box;
       }
-      .mfe h2 {
-        margin-top: 0;
-      }
+      .mfe h2 { margin-top: 0; }
+
       #destination-selector-container {
         height: calc(100vh - 200px);
         width: 100%;
@@ -65,7 +52,7 @@
         border: 1px solid #ddd;
         background: #fafafa;
         font-size: 11px;
-        max-height: 200px;
+        max-height: 180px;
         overflow: auto;
       }
     </style>
@@ -79,7 +66,7 @@
 
         <label>Page Title</label>
         <input id="titleInput"
-               placeholder="Summer in Europe"
+               placeholder="Summer campaign"
                oninput="
                  document.getElementById('pageTitle').textContent =
                    this.value || 'Page Title';
@@ -87,19 +74,19 @@
 
         <label>Chosen AEM Folder Path</label>
         <input id="pathInput"
-               placeholder="Will be filled from Destination Selector"
+               placeholder="Pick a folder on the right"
                readonly />
 
         <h3>Page Preview</h3>
         <div class="preview-page">
           <h3 id="pageTitle">Page Title</h3>
           <p style='font-size: 12px; color:#555;'>
-            Content here is authored in Sitecore, while assets/folders
-            come from AEM via the embedded Adobe micro frontend.
+            Sitecore authors stay here, but when they need assets or folders,
+            they use the embedded Adobe micro frontend on the right.
           </p>
           <p id="folderPreview"
              style='font-size: 11px; color:#777; word-break: break-all;'>
-            Selected folder: (none yet)
+            Selected AEM folder: (none yet)
           </p>
         </div>
       </div>
@@ -108,10 +95,10 @@
       <div class="mfe">
         <h2>Adobe Destination Selector (Real Micro Frontend)</h2>
         <p style="font-size: 13px;">
-          This is the official Adobe Destination Selector MFE from AEM as a
-          Cloud Service, embedded via vanilla JavaScript. In a Sitecore
-          integration, this panel would live inside the editor and let authors
-          choose an AEM folder to upload into.
+          This is the official Adobe Destination Selector MFE, hosted by Adobe
+          and embedded here via vanilla JavaScript. In a Sitecore integration,
+          this panel would live inside the editor and let authors choose an AEM
+          folder.
         </p>
 
         <div id="destination-selector-container"></div>
@@ -121,37 +108,36 @@
     </div>
 
     <script>
-      // Wait for DOM + UMD script
       window.addEventListener('load', () => {
-        const container = document.getElementById('destination-selector-container');
-        const output = document.getElementById('selectionOutput');
-        const pathInput = document.getElementById('pathInput');
-        const folderPreview = document.getElementById('folderPreview');
+        const container      = document.getElementById('destination-selector-container');
+        const output         = document.getElementById('selectionOutput');
+        const pathInput      = document.getElementById('pathInput');
+        const folderPreview  = document.getElementById('folderPreview');
 
-        // TODO: replace these three with your real values
+        // 1) Let Adobe handle auth (no manual imsToken)
+        PureJSSelectors.registerAssetsSelectorsAuthService({
+          imsClientId: "YOUR_CLIENT_ID_HERE", // API Key (Client ID)
+          imsScope: "AdobeID,openid,additional_info.projectedProductContext,read_organizations",
+          redirectUri: window.location.href
+        });
+
+        // 2) Render the Destination Selector MFE
         const destinationSelectorProps = {
-          imsOrg: "YOUR_IMS_ORG@AdobeOrg",             // e.g. 1234567890ABCDEF@AdobeOrg
-          imsToken: "YOUR_IMS_BEARER_TOKEN_HERE",      // from existing session / OAuth
-          apiKey: "YOUR_API_KEY_HERE",                 // client_id from Adobe Developer Console
-
-          rootPath: "/content/dam",                    // where to start browsing
-
-          // Called when user confirms a folder / destination
+          imsOrg: "AF5F1E996757ECD00A495C0D@AdobeOrg",
+          apiKey: "YOUR_CLIENT_ID_HERE",
+          rootPath: "/content/dam",
           handleSelection: (selection) => {
-            // selection is an array of SelectedDestination objects
             output.textContent = JSON.stringify(selection, null, 2);
 
             if (Array.isArray(selection) && selection.length > 0) {
               const first = selection[0];
               const path = first["repo:path"] || "(no path)";
-
               pathInput.value = path;
-              folderPreview.textContent = "Selected folder: " + path;
+              folderPreview.textContent = "Selected AEM folder: " + path;
             }
           }
         };
 
-        // Render the real Adobe Destination Selector MFE
         PureJSSelectors.renderDestinationSelector(container, destinationSelectorProps);
       });
     </script>
