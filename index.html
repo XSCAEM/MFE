@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Adobe Destination Selector – MFE Demo</title>
+    <title>Adobe Destination Selector – Auth Flow Demo</title>
 
     <!-- Adobe UMD bundle for Asset/Destination Selectors -->
     <script src="https://experience.adobe.com/solutions/CQ-assets-selectors/static-assets/resources/assets-selectors.js"></script>
@@ -81,7 +81,7 @@
         <div class="preview-page">
           <h3 id="pageTitle">Page Title</h3>
           <p style='font-size: 12px; color:#555;'>
-            Sitecore authors stay here, but when they need assets or folders,
+            Sitecore authors stay here, but when they need folders in AEM,
             they use the embedded Adobe micro frontend on the right.
           </p>
           <p id="folderPreview"
@@ -93,12 +93,11 @@
 
       <!-- Real Adobe MFE pane (right) -->
       <div class="mfe">
-        <h2>Adobe Destination Selector (Real Micro Frontend)</h2>
+        <h2>Adobe Destination Selector (Auth Flow)</h2>
         <p style="font-size: 13px;">
-          This is the official Adobe Destination Selector MFE, hosted by Adobe
-          and embedded here via vanilla JavaScript. In a Sitecore integration,
-          this panel would live inside the editor and let authors choose an AEM
-          folder.
+          This is the official Adobe Destination Selector micro frontend,
+          using IMS auth flow. In a Sitecore integration, this panel would
+          live inside the editor and let authors choose an AEM folder.
         </p>
 
         <div id="destination-selector-container"></div>
@@ -114,18 +113,16 @@
         const pathInput      = document.getElementById('pathInput');
         const folderPreview  = document.getElementById('folderPreview');
 
-        // 1) Let Adobe handle auth (no manual imsToken)
+        // 1) Register auth service – let Adobe handle login + token
         PureJSSelectors.registerAssetsSelectorsAuthService({
           imsClientId: "64ba5a2bba6f473fb9a43262d9730f6b", // API Key (Client ID)
           imsScope: "AdobeID,openid,additional_info.projectedProductContext,read_organizations",
           redirectUri: window.location.href
         });
 
-        // 2) Render the Destination Selector MFE
+        // 2) Render Destination Selector using *auth flow* variant
         const destinationSelectorProps = {
           imsOrg: "AF5F1E996757ECD00A495C0D@AdobeOrg",
-          apiKey: "64ba5a2bba6f473fb9a43262d9730f6b",
-          rootPath: "/content/dam",
           handleSelection: (selection) => {
             output.textContent = JSON.stringify(selection, null, 2);
 
@@ -138,7 +135,10 @@
           }
         };
 
-        PureJSSelectors.renderDestinationSelector(container, destinationSelectorProps);
+        PureJSSelectors.renderDestinationSelectorWithAuthFlow(
+          container,
+          destinationSelectorProps
+        );
       });
     </script>
   </body>
