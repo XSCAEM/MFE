@@ -116,7 +116,7 @@
 
         // 1) Let Adobe handle auth (no manual imsToken)
         PureJSSelectors.registerAssetsSelectorsAuthService({
-          imsClientId: "YOUR_CLIENT_ID_HERE", // API Key (Client ID)
+          imsClientId: "64ba5a2bba6f473fb9a43262d9730f6b", // API Key (Client ID)
           imsScope: "AdobeID,openid,additional_info.projectedProductContext,read_organizations",
           redirectUri: window.location.href
         });
@@ -124,7 +124,7 @@
         // 2) Render the Destination Selector MFE
         const destinationSelectorProps = {
           imsOrg: "AF5F1E996757ECD00A495C0D@AdobeOrg",
-          apiKey: "YOUR_CLIENT_ID_HERE",
+          apiKey: "64ba5a2bba6f473fb9a43262d9730f6b",
           rootPath: "/content/dam",
           handleSelection: (selection) => {
             output.textContent = JSON.stringify(selection, null, 2);
