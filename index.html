@@ -4,16 +4,17 @@
   <meta charset="utf-8" />
   <title>AEM Destination Selector – Local Token Demo</title>
 
-  <!-- Adobe Selector bundle -->
-  <script src="https://experience.adobe.com/solutions/CQ-assets-selectors/static-assets/resources/assets-selectors.js"></script>
+  <!-- Adobe Destination Selector bundle -->
+  <!-- NOTE: this is the current Assets Selectors script URL -->
+  <script src="https://experience.adobe.com/solutions/CQ-assets-selectors/assets/resources/assets-selectors.js"></script>
 
   <style>
-    body { font-family: Arial; margin:0; padding:0; }
+    body { font-family: Arial, sans-serif; margin:0; padding:0; }
     .shell { display:flex; height:100vh; }
-    .left { width:35%; padding:20px; background:#f5f5f5; border-right:1px solid #ccc; }
-    .right { flex:1; padding:20px; }
+    .left { width:35%; padding:20px; background:#f5f5f5; border-right:1px solid #ccc; box-sizing:border-box; }
+    .right { flex:1; padding:20px; box-sizing:border-box; }
 
-    #tokenBox { width:100%; padding:6px; }
+    #tokenBox { width:100%; padding:6px; box-sizing:border-box; }
     #saveBtn { padding:6px 12px; margin-top:8px; cursor:pointer; }
 
     #destination-selector-container {
@@ -30,6 +31,7 @@
       background:#fafafa;
       overflow:auto;
       max-height:200px;
+      box-sizing:border-box;
     }
   </style>
 </head>
@@ -40,24 +42,29 @@
     <!-- LEFT SIDE: Fake CMS + Token UI -->
     <div class="left">
       <h2>Demo Setup</h2>
-      <p><strong>Step 1:</strong> Paste your 24-hour IMS Access Token:</p>
+      <p><strong>Step 1:</strong> Paste your 24-hour AEM Local Dev IMS Access Token:</p>
 
       <textarea id="tokenBox" rows="4" placeholder="Paste IMS access token here"></textarea>
       <br/>
       <button id="saveBtn">💾 Save Token</button>
 
       <p style="margin-top:20px; font-size:12px; color:#555;">
-        This token is stored ONLY in your browser’s localStorage.
+        This token is stored ONLY in <code>localStorage</code> in this browser.
         <br/>It never leaves your machine and is not committed to GitHub.
       </p>
 
       <hr/>
 
       <h3>Selected AEM Folder</h3>
-      <input id="pathInput" placeholder="Pick a folder on the right" readonly style="width:100%; padding:6px;" />
+      <input
+        id="pathInput"
+        placeholder="Pick a folder on the right"
+        readonly
+        style="width:100%; padding:6px; box-sizing:border-box;"
+      />
     </div>
 
-    <!-- RIGHT: MFE -->
+    <!-- RIGHT: Destination Selector MFE -->
     <div class="right">
       <h2>AEM Destination Selector (Local Token)</h2>
 
@@ -89,22 +96,38 @@
       const imsToken = localStorage.getItem("imsToken");
 
       if (!imsToken) {
-        output.textContent = "// No token saved yet. Paste your token on the left and click Save.";
+        output.textContent = "// No token saved yet. Paste your token on the left and click Save, then reload.";
         return;
       }
 
-      /** 2. RENDER SELECTOR WITH TOKEN **/
+      /** 2. ENSURE THE SELECTOR LIB LOADED **/
+      if (typeof PureJSSelectors === "undefined") {
+        output.textContent =
+          "// assets-selectors.js did not load.\n" +
+          "// Check the <script> URL and make sure you're serving this file over HTTP(S), not file://";
+        return;
+      }
+
+      /** 3. RENDER DESTINATION SELECTOR WITH TOKEN **/
       const props = {
+        // 🔹 Replace with YOUR IMS ORG from Admin Console / Dev Console
         imsOrg: "AF5F1E996757ECD00A495C0D@AdobeOrg",
+
+        // 🔹 Our 24h Local Dev token (from localStorage)
         imsToken: imsToken,
+
+        // 🔹 IMPORTANT: client_id from your Adobe Developer Console project
+        // The same project where you added AEM Assets API and generated this local dev token.
         apiKey: "64ba5a2bba6f473fb9a43262d9730f6b",
+
+        // Where to start browsing
         rootPath: "/content/dam",
 
         handleSelection: (sel) => {
           output.textContent = JSON.stringify(sel, null, 2);
           if (Array.isArray(sel) && sel.length > 0) {
             const first = sel[0];
-            const path = first["repo:path"] || "(no path)";
+            const path = first["repo:path"] || "(no path returned)";
             pathInput.value = path;
           }
         }
